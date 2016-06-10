@@ -1,0 +1,29 @@
+
+Name: stream-bench
+Version: 0.1.0
+License: MIT
+Authors: Rizo Isrof <rizo@odis.io>
+Homepage: http://github.com/rizo/stream-bench
+OASISFormat: 0.4
+BuildTools: camlp4o,ocamlbuild
+Plugins: META (0.4), DevFiles (0.4)
+
+Synopsis:
+  A collection of simple benchmarks for various streaming libraries.
+
+Executable "bench_basic"
+  Path: src
+  MainIs: bench_basic.ml
+  CompiledObject: best
+  Install: false
+  NativeOpt: -nodynlink -noassert -O3
+  CCOpt: -O3 -fno-PIC
+  BuildDepends:
+    threads,
+    core_bench
+
+SourceRepository master
+  Type:     git
+  Location: https://github.com/rizo/stream-bench.git
+  Browser:  https://github.com/rizo/stream-bench
+
