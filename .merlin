@@ -1,5 +1,5 @@
+
 S src
-B _build
 B _build/src
-PKG core core_bench
+PKG core_bench
 
