@@ -35,7 +35,7 @@ X.fold (+) 0 (init input_len (fun x -> x))
 
 The benchmarks were performed with `core_bench` on a MacBook Pro, CPU 2,7 GHz Intel Core i5.
 
-Here are some results:
+Here are some results with normalized values:
 
 ![bench-fold-pie](results/bench-fold-pie.png)
 
