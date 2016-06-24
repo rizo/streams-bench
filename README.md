@@ -43,6 +43,7 @@ Here are some results:
 
 ![bench-fold-lines](results/bench-fold-lines.png)
 
+Lower values are better in all the charts.
 
 All the results are available at public spreadsheet:
 
