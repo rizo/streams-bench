@@ -45,7 +45,7 @@ Here are some results with normalized values:
 
 Lower values are better in all the charts.
 
-All the results are available at public spreadsheet:
+All the results are available in public spreadsheet:
 
 - <https://docs.google.com/spreadsheets/d/1QFaGbPLubUYJci09nC2LhvKRQease3PflQqtQzVZhpU/edit?usp=sharing>
 
