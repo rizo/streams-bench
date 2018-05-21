@@ -1,7 +1,7 @@
 
 module Containers_sequence = Sequence
 module Core_sequence       = Core.Std.Sequence
-module Elements_stream     = Elements.Data.Stream
+(* module Elements_stream     = Elements.Data.Stream *)
 
 open Core_bench.Std
 module B = Bench.Test
@@ -33,13 +33,13 @@ let list_sequential village =
   |> List.map (fun _ -> 1)
   |> List.fold_left (+) 0
 
-let elements_stream village =
-  village
-  |> Elements_stream.of_list
-  |> Elements_stream.filter (fun p -> Village.age p < 18)
-  |> Elements_stream.filter (fun p -> Village.sex p = `F)
-  |> Elements_stream.map (fun _ -> 1)
-  |> Elements_stream.fold (+) 0
+(* let elements_stream village = *)
+(*   village *)
+(*   |> Elements_stream.of_list *)
+(*   |> Elements_stream.filter (fun p -> Village.age p < 18) *)
+(*   |> Elements_stream.filter (fun p -> Village.sex p = `F) *)
+(*   |> Elements_stream.map (fun _ -> 1) *)
+(*   |> Elements_stream.fold (+) 0 *)
 
 let core_sequence village =
   let module Seq = Core_sequence in
@@ -100,7 +100,7 @@ let () =
       B.create ~name:"containers_sequence" (fun () -> ignore (containers_sequence v));
       B.create ~name:"containers_klist"    (fun () -> ignore (containers_klist    v));
       B.create ~name:"core_sequence"       (fun () -> ignore (core_sequence       v));
-      B.create ~name:"elements_stream"     (fun () -> ignore (elements_stream     v));
+      (* B.create ~name:"elements_stream"     (fun () -> ignore (elements_stream     v)); *)
       B.create ~name:"list_for_loop"       (fun () -> ignore (list_for_loop       v));
       B.create ~name:"list_sequential"     (fun () -> ignore (list_sequential     v));
       B.create ~name:"list_simple_fold"    (fun () -> ignore (list_simple_fold    v));

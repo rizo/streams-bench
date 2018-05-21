@@ -49,6 +49,14 @@ let total_finite_klist () =
   let open Total_finite_klist in
   fold (+) 0 (init input_len id)
 
+let array_view () =
+  let open Views.Array_view in
+  fold (+) 0 input_array
+
+let list_view () =
+  let open Views.List_view in
+  fold (+) 0 input_list
+
 let () =
   let open Core_bench.Std in
   Printf.printf "streams-bench: fold [%d]\n" input_len;
@@ -56,12 +64,14 @@ let () =
   Core.Command.run (Bench.make_command [
       bench "array"                   array                  ;
       bench "list"                    list                   ;
-      bench "coroutine"               coroutine              ;
       bench "fusion_stream"           fusion_stream          ;
-      bench "generator"               generator              ;
       bench "iterators"               iterators              ;
-      bench "partial_finite_klist"    partial_finite_klist   ;
       bench "sequence"                sequence               ;
       bench "total_finite_klist"      total_finite_klist     ;
+      bench "array_view"              array_view             ;
+      bench "list_view"               list_view              ;
+      (* bench "coroutine"               coroutine              ; *)
+      (* bench "generator"               generator              ; *)
+      (* bench "partial_finite_klist"    partial_finite_klist   ; *)
     ])
 

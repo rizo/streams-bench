@@ -1,0 +1,7 @@
+
+(executable
+  ((name Bench_basic)
+   (modules (Bench_basic))
+   (libraries (core_bench streams))
+   (ocamlopt_flags (:standard -O3))))
+
