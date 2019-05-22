@@ -1,0 +1,8 @@
+lib: [
+  "_build/install/default/lib/streams-bench/META" {"META"}
+  "_build/install/default/lib/streams-bench/opam" {"opam"}
+]
+doc: [
+  "_build/install/default/doc/streams-bench/README.md"
+  "_build/install/default/doc/streams-bench/LICENSE"
+]

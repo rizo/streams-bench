@@ -1,0 +1,13 @@
+opam-version: "1.2"
+maintainer: "Rizo Isrof <rizo@odis.io>"
+authors: ["Rizo Isrof <rizo@odis.io>"]
+homepage: "https://github.com/rizo/streams-bench"
+tags: ["standard" "functional" "org:rizo" ]
+license: "ISC"
+available: [ ocaml-version >= "4.01.0"]
+depends:
+[
+  "dune" {build & >= "1.0"}
+]
+depopts: []
+build: ["make" "build"]
