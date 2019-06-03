@@ -42,9 +42,10 @@ B /Users/rizo/.opam/4.07.1+rc1+flambda/lib/textutils/console
 B /Users/rizo/.opam/4.07.1+rc1+flambda/lib/time_now
 B /Users/rizo/.opam/4.07.1+rc1+flambda/lib/typerep
 B /Users/rizo/.opam/4.07.1+rc1+flambda/lib/variantslib
-B ../_build/default/src/.Cases.objs/byte
 B ../_build/default/src/.Cmd_benchmark.eobjs/byte
 B ../_build/default/src/.Cmd_core_bench.eobjs/byte
+B ../_build/default/src/.Parallel.eobjs/byte
+B ../_build/default/src/.Streams_bench.objs/byte
 S /Users/rizo/.opam/4.07.1+rc1+flambda/lib/base
 S /Users/rizo/.opam/4.07.1+rc1+flambda/lib/base/caml
 S /Users/rizo/.opam/4.07.1+rc1+flambda/lib/base/md5
@@ -89,4 +90,4 @@ S /Users/rizo/.opam/4.07.1+rc1+flambda/lib/time_now
 S /Users/rizo/.opam/4.07.1+rc1+flambda/lib/typerep
 S /Users/rizo/.opam/4.07.1+rc1+flambda/lib/variantslib
 S .
-FLG -open Cases__ -w -40 -w -40 -w -40
+FLG -open Streams_bench -w -40 -w -40 -w -40 -w -40

@@ -1,17 +1,3 @@
-let open_process_in x =
-  prerr_endline "[TRACE] Unix.open_process_in";
-  Unix.open_process_in x
-
-let open_in x =
-  prerr_endline "[TRACE] open_in";
-	Pervasives.open_in x
-
-let close_in x =
-	prerr_endline "[TRACE] close_in";
-	Pervasives.close_in x
-
-
-(* --- *)
 
 let bracket ~(init : unit -> 'r) ~(stop : 'r -> 'b) (f : 'r -> 'r) : 'b =
   let acc = init () in
@@ -38,7 +24,7 @@ let bracket ~(init : unit -> 'r) ~(stop : 'r -> 'b) (f : 'r -> 'r) : 'b =
 *)
 
 type ('a, 'b) reducer =
-  Reducer : { 
+  Reducer : {
     init : unit -> 'acc;
     step : 'acc -> 'a -> 'acc;
     full : 'acc -> bool;
@@ -46,16 +32,46 @@ type ('a, 'b) reducer =
   } -> ('a, 'b) reducer
 
 
+module Reducer = struct
+  type ('a, 'b) t = ('a, 'b) reducer
 
-let null =
-  Reducer {
-    init = (fun () -> ());
-    step = (fun () _ -> ());
-    full = (fun () -> true);
-    stop = (fun () -> ());
-  }
+  let make ~init ~step ?(full=fun _ -> false) ~stop =
+    Reducer { init; step; full; stop }
 
-type 'a t = 
+  let null =
+    Reducer {
+      init = (fun () -> ());
+      step = (fun () _ -> ());
+      full = (fun () -> true);
+      stop = (fun () -> ());
+    }
+
+  let list =
+    Reducer {
+      init = (fun () -> []);
+      step = (fun acc x -> x :: acc);
+      full = (fun _ -> false);
+      stop = (fun acc -> List.rev acc);
+    }
+
+  let sum =
+    Reducer {
+      init = (fun () -> 0.);
+      step = (fun acc x -> x +. acc);
+      full = (fun _ -> false);
+      stop = (fun acc -> acc);
+    }
+
+  let take n (Reducer k) =
+    let init () = (k.init (), 0) in
+    let step (acc, i) x = (k.step acc x, i + 1) in
+    let full (_, i) = i = n in
+    let stop (acc, _) = k.stop acc in
+    Reducer { init; step; full; stop }
+end
+
+
+type 'a t =
   { reduce : 'r . ('a, 'r) reducer -> 'r }
   [@@unboxed]
 
@@ -77,7 +93,7 @@ let flat_map f this =
     let step r x =
       (f x).reduce (Reducer { k with
           init = (fun () -> r);
-          stop = (fun r -> r) 
+          stop = (fun r -> r)
         }) in
     this.reduce (Reducer { k with step }) in
   { reduce }
@@ -217,96 +233,10 @@ let iter f self =
 		})
 
 
-let rec waitpid flags pid = try Unix.waitpid flags pid with
-  | Unix.Unix_error (Unix.EINTR, _, _) -> waitpid flags pid
-
-let rec unix_read fd bytes i n = try Unix.read fd bytes i n with
-  | Unix.Unix_error (Unix.EINTR, _, _) -> unix_read fd bytes i n
-
-let rec create_process prog args ~stdin ~stdout ~stderr =
-  try Unix.create_process prog args stdin stdout stderr with
-  | Unix.Unix_error (Unix.EINTR, _, _) ->
-      create_process prog args stdin stdout stderr
-
-
-let file path =
-  let ic = lazy (open_in path) in
-	let reduce (Reducer k) =
-		let rec loop r =
-      if k.full r then r
-      else try
-				let x = input_line (Lazy.force ic) in
-				loop (k.step r x)
-			with End_of_file -> r in
-    let stop r =
-      if Lazy.is_val ic then
-        close_in (Lazy.force ic);
-      k.stop r in
-    bracket loop ~init:k.init ~stop in
-	{ reduce }
-
-
-let files paths =
-  flat_map file paths
-
-
-let read_process cmd =
-	let reduce (Reducer k) =
-    let ic = open_process_in cmd in
-		let rec loop r=
-			if k.full r then r
-      else try
-				let x = input_line ic in
-				loop (k.step r x)
-			with End_of_file -> r in
-    bracket loop ~init:k.init
-      ~stop:(fun r -> close_in ic; k.stop r) in
-	{ reduce }
-
-let pipe name args ?(env = []) self =
+let concat this that =
   let reduce (Reducer k) =
-    let (send_r, send_w) = Unix.pipe () in
-    let recv_r = ExtUnix.All.posix_openpt [Unix.O_RDWR; Unix.O_NOCTTY] in
-    ExtUnix.All.grantpt recv_r;
-    ExtUnix.All.unlockpt recv_r;
-    let recv_w_tty = ExtUnix.All.ptsname recv_r in
-    let output_buf = Bytes.make 4096 '\000' in
-    let feed str =
-      let line = Bytes.of_string (str ^ "\n") in
-      let line_len = Bytes.length line in
-      let wn = Unix.write send_w line 0 line_len in
-      if wn <> line_len then prerr_endline "incorrect write to pipe";
-      let rn = Unix.read recv_r output_buf 0 99 in
-      Bytes.to_string (Bytes.sub output_buf 0 (rn - 1)) in
-    match Unix.fork () with
-    | 0 ->
-      Unix.close send_w;
-      Unix.close recv_r;
-
-      (* Setup pipe redirect for STDIN. *)
-      Unix.close Unix.stdin;
-      Unix.dup2 send_r Unix.stdin;
-      Unix.close send_r;
-
-      (* Setup tty redirect for STDOUT. *)
-      let recv_w = Unix.openfile recv_w_tty [Unix.O_RDWR; Unix.O_NOCTTY] 0o640 in
-      Unix.close Unix.stdout;
-      Unix.dup2 recv_w Unix.stdout;
-      Unix.close recv_w;
-      Unix.execve name (Array.of_list (name :: args)) (Array.of_list env)
-    | pid ->
-      (* Close unused pipe ends. *)
-      Unix.close send_r;
-      let step acc x = (k.step acc (feed x)) in
-      let stop acc =
-        Unix.kill pid Sys.sigint;
-        let _ = waitpid [] pid in
-        Printf.eprintf "[TRACE] Killed %d\n%!" pid;
-        k.stop acc in
-      self.reduce (Reducer { k with step; stop })
-  in
+    let stop r = that.reduce (Reducer {k with init = (fun () -> r)}) in
+    this.reduce (Reducer { k with stop }) in
   { reduce }
-
-let grep = pipe "/usr/bin/grep"
 
 

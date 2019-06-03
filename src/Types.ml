@@ -27,3 +27,27 @@ module type Benchmarks = sig
   val singleton : unit -> unit
 end
 
+
+module type Indexed = sig
+  type 'a t
+
+  val get : int -> 'a t -> 'a option
+  val length : 'a t ->  int
+end
+
+
+
+module type Monoid = sig
+  type 'a t
+
+  val empty : 'a t
+  val combine : 'a t -> 'a t -> 'a t
+end
+
+
+module type Chunkable = sig
+  type 'a t
+
+  val chunks : size:int -> 'a t -> 'a t list
+end
+

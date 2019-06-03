@@ -1,5 +1,5 @@
 
-open Types
+open Streams_bench.Types
 
 module Assert = struct
   let int expected actual =
@@ -144,10 +144,77 @@ module Basic (M : Stream) = struct
   end
 end
 
+module Indexed (M : Indexed) = struct
+  open Streams_bench.Pull_index
 
-let run =
+  let test_conv () = begin
+    assert (to_array (of_array [||]) = [||]);
+    assert (to_array (of_array [|1|]) = [|1|]);
+    assert (to_array (of_array [|1; 2; 3|]) = [|1; 2; 3|]);
+  end
+
+  let test_get () = begin
+    assert (get 0 (of_array [||]) = None);
+    assert (get 7 (of_array [||]) = None);
+    assert (get 0 (of_array [|'a'; 'b'; 'c'|]) = Some 'a');
+    assert (get 1 (of_array [|'a'; 'b'; 'c'|]) = Some 'b');
+    assert (get 2 (of_array [|'a'; 'b'; 'c'|]) = Some 'c');
+    assert (get 3 (of_array [|'a'; 'b'; 'c'|]) = None);
+  end
+
+
+  let test_map () = begin
+    assert (to_array (map string_of_int (of_array [||])) = [||]);
+    assert (to_array (map string_of_int (of_array [|0|])) = [|"0"|]);
+    assert (to_array (map string_of_int (of_array [|0; 1; 2|])) = [|"0"; "1"; "2"|]);
+  end
+
+
+  let test_append () = begin
+    let s0 = of_array [||] in
+    let s1 = of_array [|'a'; 'b'; 'c'; 'd'|] in
+    let s2 = of_array [|'x'; 'y'; 'z'|] in
+    assert (to_array (append s0 s0) = [||]);
+    assert (to_array (append s0 s1) = [|'a'; 'b'; 'c'; 'd'|]);
+    assert (to_array (append s1 s0) = [|'a'; 'b'; 'c'; 'd'|]);
+    assert (to_array (append s1 s2) = [|'a'; 'b'; 'c'; 'd'; 'x'; 'y'; 'z'|]);
+    assert (to_array (append s2 s1) = [|'x'; 'y'; 'z'; 'a'; 'b'; 'c'; 'd'|]);
+  end
+
+
+  let run () = begin
+    test_conv ();
+    test_get ();
+    test_map ();
+    test_append ();
+  end
+end
+
+
+let streams : (string * (module Stream)) list = [
+  "Push_reducer_bool", (module Streams_bench.Push_reducer_bool); 
+  "Push_unit", (module Streams_bench.Push_unit);
+  "Pull_cursor", (module Streams_bench.Pull_cursor);
+  "Pull_cursor_k", (module Streams_bench.Pull_cursor_k);
+  "Pull_cursor_ultimate", (module Streams_bench.Pull_cursor_ultimate);
+  "Push_reducer_stop", (module Streams_bench.Push_reducer_stop);
+  "Pull_stream_fusion", (module Streams_bench.Pull_stream_fusion);
+]
+
+let slices : (string * (module Indexed)) list = [
+  "Pull_index", (module Streams_bench.Pull_index)
+]
+
+let () =
+  Printexc.record_backtrace true;
   List.iter (fun (name, (case : (module Stream))) ->
       Printf.eprintf "Running tests for `%s`...\n%!" name;
       let module Test = Basic(val case) in
       Test.run ())
+    streams;
+  List.iter (fun (name, (case : (module Indexed))) ->
+      Printf.eprintf "Running tests for `%s`...\n%!" name;
+      let module Test = Indexed(val case) in
+      Test.run ())
+    slices
 

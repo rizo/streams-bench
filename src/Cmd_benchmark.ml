@@ -1,5 +1,5 @@
 
-include Cases
+include Streams_bench.Cases
 
 let () =
   let tests = List.map (fun (name, f) -> name, Sys.opaque_identity f, ()) current in

@@ -1,0 +1,18 @@
+EXCLUDE_QUERY_DIR
+B /Users/rizo/.opam/4.07.1+rc1+flambda/lib/bytes
+B /Users/rizo/.opam/4.07.1+rc1+flambda/lib/extunix
+B /Users/rizo/.opam/4.07.1+rc1+flambda/lib/fmt
+B /Users/rizo/.opam/4.07.1+rc1+flambda/lib/ocaml
+B /Users/rizo/.opam/4.07.1+rc1+flambda/lib/seq
+B /Users/rizo/.opam/4.07.1+rc1+flambda/lib/stdlib-shims
+B ../_build/default/src/.Streams_bench.objs/byte
+B ../_build/default/tests/.Tests.eobjs/byte
+S /Users/rizo/.opam/4.07.1+rc1+flambda/lib/bytes
+S /Users/rizo/.opam/4.07.1+rc1+flambda/lib/extunix
+S /Users/rizo/.opam/4.07.1+rc1+flambda/lib/fmt
+S /Users/rizo/.opam/4.07.1+rc1+flambda/lib/ocaml
+S /Users/rizo/.opam/4.07.1+rc1+flambda/lib/seq
+S /Users/rizo/.opam/4.07.1+rc1+flambda/lib/stdlib-shims
+S ../src
+S .
+FLG -w -40
