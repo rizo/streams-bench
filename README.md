@@ -20,9 +20,9 @@ The table below contains normalized execution times for a benchmark that combine
 | 100,000    | 70.72%         | 80.36% | 87.80%      | 100.00%  | 51.51%         | 60.41% |
 | 1,000,000  | 69.32%         | 80.53% | 88.02%      | 100.00%  | 52.63%         | 62.49% |
 
-> Lower values mean faster execution time.
-
 ![image](./results/all-1591727671.png)
+
+> Lower values mean faster execution time.
 
 
 ## Implemented models
