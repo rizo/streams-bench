@@ -11,6 +11,7 @@ The benchmarks were built with the flambda variant of the 4.10 compiler with th 
 
 The table below contains normalized execution times for a benchmark that combines the following operations: `unfold`, `map`, `filter`, `take`, `flat_map` and `fold`. The code can be found in `src/Cases.ml`.
 
+  
 |Input length|Streaming.Stream| Gen    |Base.Sequence|Stdlib.Seq|Streaming.Stream| Iter   |
 |------------|----------------|--------|-------------|----------|----------------|--------|
 | 10         | 72.24%         | 80.41% | 88.12%      | 100.00%  | 56.57%         | 61.61% |
