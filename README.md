@@ -171,3 +171,4 @@ Estimated testing time 1m (6 benchmarks x 10s). Change using '-quota'.
   Iter                45.66ms    30.00Mw      782.29w      782.29w       72.13%
 ```
 
+Alternatively use the `./run.sh` script to run benchmarks for different input sizes.
