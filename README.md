@@ -33,7 +33,7 @@ All the models presented here were implemented from scratch in this repository
 to provide a clean reproducible environment and consisten compilation flags.
 
 ### `Stdlib.Seq` (`Pull_thunk_list`)
-Implemented in [Stdlib.Seq](https://github.com/ocaml/ocaml/blob/4.10/stdlib/seq.mli). This is an iterator similar to lists albeit lazy,
+Model used in [Stdlib.Seq](https://github.com/ocaml/ocaml/blob/4.10/stdlib/seq.mli). This is an iterator similar to lists albeit lazy,
 protected with a thunk.
 
 ```ocaml
@@ -45,7 +45,7 @@ and 'a t = unit -> 'a node
 ```
 
 ### `Streaming.Source` (`Pull_cursor`, `Pull_cursor_k` and `Pull_cursor_safe`)
-Implemented in [Streaming.Source](https://github.com/odis-labs/streaming).
+Model used in [Streaming.Source](https://github.com/odis-labs/streaming).
 Iterators based on the "unfold" function. They put an explicit state in the
 type making them easy to implement and reason about. The `_k` and `_safe`
 variants attempt to implement them using CPS and add resource handling.
@@ -71,10 +71,10 @@ type 'a t =
 ```
 
 ### `Gen` (`Pull_option`)
-Implemented in [Gen](https://github.com/c-cube/gen). This is a simple pull iterator similar in spirit to `Pull_cursor` but without explicit state. The implementation of combinators is forced to used mutable state for control management.
+Model used in [Gen](https://github.com/c-cube/gen). This is a simple pull iterator similar in spirit to `Pull_cursor` but without explicit state. The implementation of combinators is forced to used mutable state for control management.
 
 ## Base.Sequence (`Pull_stream_fusion`)
-Implemented in
+Model used in
 [Base.Sequence](https://github.com/janestreet/base/blob/v0.14.0/src/sequence.mli).
 This iterator is very well known for being used as a "stream fusion" mechanism
 for Haskell lists. It is structurally similar to `Pull_cursor` but has an extra
@@ -90,7 +90,7 @@ type +_ t =
 ```
 
 ### `Streaming.Stream` (`Push_reducer_bool` and `Push_reducer_stop`)
-Implemented in [Streaming.Stream](https://github.com/odis-labs/streaming). A
+Model used in [Streaming.Stream](https://github.com/odis-labs/streaming). A
 push-based iterator with great performance and built-in resource handling. This
 implementation is inspired by Clojure's transducers. It can be thought of as
 "fold fusion with resource handling" The `Push_reducer_stop` variant encodes
@@ -131,7 +131,7 @@ type 'a t = { run : 'r . ('r -> 'a -> 'r option) -> 'r -> 'r }
 
 
 ### Iter (`Push_unit`)
-Implemented in [Iter](https://github.com/c-cube/iter). This is a very simple
+Model used in [Iter](https://github.com/c-cube/iter). This is a very simple
 push-based iterator. It has excellent performance and supports efficient
 concatentation and unzipping. Its minimal interface imposes the use mutations
 and exceptions for control management. It also lacks support for resource
