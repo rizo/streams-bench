@@ -1,7 +1,23 @@
 
-let length = 100_000
-let limit  = length / 2
-let input  = Array.to_list (Array.init length (fun x -> x))
 
-let () =
-  Printf.printf "Input length = %d, limit = %d\n" length limit
+let length = ref (int_of_float (2.0 ** 7.0))
+let limit  = ref (!length / 2)
+
+let main_ops = ref "all"
+
+let configure () =
+  begin try
+    main_ops := Sys.getenv "STREAMS_BENCHMARK";
+    length := int_of_string (Sys.getenv "STREAMS_LENGTH");
+    limit := int_of_string (Sys.getenv "STREAMS_LIMIT");
+  with Not_found ->
+    print_endline "Missing environment variables for benchmark:
+
+  - STREAMS_BENCHMARK=all|all_no_flat_map|all_no_take|fold|map|filter|flat_map|take
+  - STREAMS_LENGTH=int (input length)
+  - STREAMS_LIMIT=int (used for take)
+
+Using defaults."
+  end;
+  Printf.printf "benchmark=%s length=%d limit=%d\n"
+    !main_ops !length !limit

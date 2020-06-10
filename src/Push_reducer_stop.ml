@@ -7,7 +7,7 @@ let unwrap_reduced x =
   | Done r | Continue r -> r
 
 type ('a, 'r) reducer =
-  Reducer : { 
+  Reducer : {
     init : 's;
     step : 'a -> 's -> 's reduced;
     stop : 's -> 'r;
@@ -147,6 +147,20 @@ let of_list input =
     in
     loop input reducer.init
   in
+  { run }
+
+
+let[@inline] of_array arr =
+  let len = Array.length arr in
+  let run (Reducer k) =
+    let[@unroll] rec loop i r =
+      if i = len then r else
+      let x = Array.get arr i in
+      match k.step x r with
+      | Done r' -> r'
+      | Continue r' ->
+        loop (i + 1) r' in
+    k.stop (loop 0 (k.init)) in
   { run }
 
 

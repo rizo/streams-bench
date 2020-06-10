@@ -1,6 +1,0 @@
-
-(executable
-  (name Tests)
-  (public_name streams-bench-tests)
-  (libraries streams-bench fmt))
-

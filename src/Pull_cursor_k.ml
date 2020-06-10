@@ -1,8 +1,4 @@
 
-(*
-    Fmt.epr "%a@." (Fmt.Dump.list Fmt.int) (Obj.magic r');
-*)
-
 type ('a, 's) iter = {
   init : 's;
   next : 'r . ('a -> 's -> 'r) -> 's -> (unit -> 'r) -> 'r;
@@ -32,8 +28,8 @@ let flat_map_mut f (Iter top) =
 	let sub_state = ref (Iter { init = (); next = (fun _k _s r -> r ()) }) in
   let rec next k s r =
 		let Iter sub = !sub_state in
-    sub.next 
-      (fun x sub_s' -> 
+    sub.next
+      (fun x sub_s' ->
 				sub_state := Iter { sub with init = sub_s'};
 				k x s)
       sub.init
@@ -44,7 +40,7 @@ let flat_map_mut f (Iter top) =
 
 let flat_map f (Iter top) =
   let rec next k (s, (Iter sub)) r =
-    sub.next 
+    sub.next
       (fun x sub_s' -> k x (s, Iter { sub with init = sub_s'}))
       sub.init
       (fun () -> top.next (fun x s' -> next k (s', f x) r) s r)

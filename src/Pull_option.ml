@@ -1,6 +1,11 @@
 
 type 'a t = unit -> 'a option
 
+let singleton x =
+  let first = ref true in
+  fun () ->
+    if !first then (first := false; Some x) else None
+
 let count () =
   let i = ref 0 in
   fun () ->
@@ -63,7 +68,7 @@ let take n gen =
 let rec fold f acc gen =
   match gen () with
   | None -> acc
-  | Some x -> fold f (f x acc) gen
+  | Some x -> fold f (f acc x) gen
 
 
 type 'a state =

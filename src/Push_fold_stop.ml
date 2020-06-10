@@ -1,15 +1,15 @@
 
-type 'a t = { run : 'r . ('a -> 'r -> 'r option) -> 'r -> 'r } [@@unboxed]
+type 'a t = { run : 'r . ('r -> 'a -> 'r option) -> 'r -> 'r } [@@unboxed]
 
 let map f self : 'a t =
   let run step =
-      self.run (fun a r -> step (f a) r) in
+      self.run (fun r a -> step r (f a)) in
   { run }
 
-let filter p self : 'a t = 
+let filter p self : 'a t =
   let run step =
-    self.run (fun a r ->
-        if p a then step a r
+    self.run (fun r a ->
+        if p a then step r a
         else Some r) in
   { run }
 
@@ -22,7 +22,7 @@ let take n self : 'a t =
             else (incr count; step a r)) }
 
 let fold f acc self =
-  self.run (fun a r -> Some (f a r)) acc
+  self.run (fun r a -> Some (f r a)) acc
 
 let of_list l : 'a t =
   { run = fun k r ->
@@ -30,7 +30,7 @@ let of_list l : 'a t =
         match l with
         | [] -> r
         | x :: xs ->
-          match k x r with
+          match k r x with
           | Some r' -> loop xs r'
           | None -> r
       in
@@ -44,7 +44,7 @@ let unfold seed next =
         match next seed with
         | None -> acc
         | Some (x, seed') ->
-          match k x acc with
+          match k acc x with
           | Some acc' -> loop seed' acc'
           | None -> acc
       in
@@ -53,10 +53,12 @@ let unfold seed next =
 
 let flat_map f self : 'b t =
   { run = fun k ->
-      self.run (fun a r -> Some ((f a).run k r)) }
+      self.run (fun r a -> Some ((f a).run k r)) }
 
 
 let empty = { run = fun _k r -> r }
+
+let singleton a = { run = fun k r -> match k r a with Some r -> r | _ -> r }
 
 
 let append self other =

@@ -38,8 +38,7 @@ let flat_map f self = fun k ->
 
 let empty = fun _k -> ()
 
-(* FIXME *)
-let append self other = fun k ->
+let concat self other = fun k ->
   self k;
   other k
 

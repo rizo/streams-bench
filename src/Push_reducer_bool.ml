@@ -1,5 +1,5 @@
 
-let bracket ~(init : unit -> 'r) ~(stop : 'r -> 'b) (f : 'r -> 'r) : 'b =
+let[@inline] bracket ~(init : unit -> 'r) ~(stop : 'r -> 'b) (f : 'r -> 'r) : 'b =
   let acc = init () in
   try
     let acc' = f acc in
@@ -189,6 +189,17 @@ let of_list_unsafe l =
   { reduce }
 
 
+let[@inline] of_array arr =
+  let len = Array.length arr in
+  let reduce (Reducer k) =
+    let[@inline] rec loop i r =
+      if k.full r || i = len then r
+      else
+        let x = Array.get arr i in
+        loop (i + 1) (k.step r x) in
+    bracket (loop 0) ~init:k.init ~stop:k.stop in
+  { reduce }
+
 let of_list_safe xs =
   let reduce (Reducer k) =
     let rec loop s r =
@@ -212,7 +223,7 @@ let count =
 
 
 let (--) i j =
-  unfold i (fun x -> if x=j then None else Some (x, x + 1))
+  unfold i (fun x -> if x = j then None else Some (x, x + 1))
 
 
 let to_list self =

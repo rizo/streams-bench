@@ -1,5 +1,4 @@
 open Streams_bench
-open Printf
 
 module Slice_par = struct
   module Reducer = Push_reducer_bool.Reducer
