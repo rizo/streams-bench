@@ -1,6 +1,6 @@
 # Streams Benchmarks
 
-This is an ongoing effort to understand and document the performance characteristics of the streaming models available for OCaml.
+This is an ongoing effort to understand and document the performance characteristics of streaming models available for OCaml.
 
 
 ## Results
