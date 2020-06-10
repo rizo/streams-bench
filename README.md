@@ -122,8 +122,7 @@ type 'a t = { run : 'r . ('a, 'r) reducer -> 'r}
 ### `Push_fold_stop`
 A fold with termination that can be fused to created nested computations that
 form streams. Similar in spirit to `Push_reducer_bool`, but lacks resource
-handling. Requires mutation in combinators as acessing the accumulated state is
-impossible.
+handling. Writing combinators in this style is somewhat complicated.
 
 ```ocaml
 type 'a t = { run : 'r . ('r -> 'a -> 'r option) -> 'r -> 'r }
