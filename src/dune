@@ -7,7 +7,14 @@
    Push_fold_stop Push_reducer Push_reducer_bool Push_reducer_obj
    Push_reducer_stop Push_unit Types)
  (modes native)
- (libraries unix extunix)
+ (libraries unix iter extunix)
+ (ocamlopt_flags -unbox-closures -O3))
+
+(executable
+ (name Cmd_core_bench_opam)
+ (modules Cmd_core_bench_opam)
+ (libraries streams-bench core_bench gen iter streaming base)
+ (modes native)
  (ocamlopt_flags -unbox-closures -O3))
 
 (executable
