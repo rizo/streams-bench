@@ -52,3 +52,7 @@ let unfold seed next = fun k ->
   in
   loop seed
 
+
+let (--) start stop = fun k ->
+  for i = start to stop do k i done
+
