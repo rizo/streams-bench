@@ -9,7 +9,7 @@ The results for the benchmarks presented here were run on a MacBook Pro with the
 
 The benchmarks were built with the flambda variant of the 4.10 compiler with th `-unbox-closures -O3` flags.
 
-The table below contains normalized execution times for a benchmark that combines the following operations: `unfold`, `map`, `filter`, `take`, `flat_map` and `fold`. The code can be found in `src/Cases.ml`. Only some of the modesl are included in the benchmark results below.
+The table below contains normalized execution times for a benchmark that combines the following operations: `unfold`, `map`, `filter`, `take`, `flat_map` and `fold`. The code can be found in `src/Cases.ml`. Only some of the models are included in the benchmark results below.
 
   
 |Input length|Streaming.Source| Gen    |Base.Sequence|Stdlib.Seq|Streaming.Stream| Iter   |
