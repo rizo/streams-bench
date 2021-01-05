@@ -98,15 +98,16 @@ let flat_map f this =
     this.reduce (Reducer { k with step }) in
   { reduce }
 
-
-let fold step init =
-  reduce (Reducer {
-      init = (fun () -> init);
-      step;
-      full = (fun _ -> false);
-      stop = (fun x -> x);
-    })
-
+ let[@inline] fold step init =
+   let[@inline] init () = init in
+   let[@inline] stop x = x in
+   let[@inline] full _ = false in
+   reduce (Reducer {
+       init;
+       step;
+       full;
+       stop;
+     })
 
 let map f self =
   let reduce (Reducer k) =
@@ -222,8 +223,15 @@ let count =
   { reduce }
 
 
-let (--) i j =
-  unfold i (fun x -> if x = j then None else Some (x, x + 1))
+let[@inline] (--) n m =
+  let[@inline] reduce (Reducer k) =
+    let[@inline] rec loop i r =
+      (* if k.full r then r *)
+      (* else *)
+        if i > m then r
+        else loop (i + 1) (k.step r i) in
+    k.stop (loop n (k.init ())) in
+  { reduce }
 
 
 let to_list self =

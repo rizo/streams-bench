@@ -1,32 +1,46 @@
 (library
  (name Streams_bench)
  (public_name streams-bench)
- (modules Cases Config Local Pull_cursor Pull_cursor_k
-   Pull_cursor_safe Pull_cursor_skip Pull_cursor_safe Pull_exn Pull_index
-   Pull_option Pull_stream_fusion Pull_thunk_list Push_bool Push_fold
-   Push_fold_stop Push_reducer Push_reducer_bool Push_reducer_obj
-   Push_reducer_stop Push_unit Types)
+ (modules Cases Config Local Pull_cursor Pull_cursor_k Pull_cursor_safe
+   Pull_cursor_skip Pull_cursor_safe Pull_exn Pull_index Pull_option
+   Pull_stream_fusion Pull_thunk_list Push_bool Push_fold Push_fold_stop
+   Push_reducer Push_reducer_bool Push_reducer_obj Push_reducer_stop
+   Push_unit Types)
  (modes native)
- (libraries unix extunix)
- (ocamlopt_flags -unbox-closures -O3))
+ (libraries unix iter extunix)
+ (ocamlopt_flags -unbox-closures -O3 -unbox-closures-factor 20))
+
+(executable
+ (name Cmd_core_bench_opam)
+ (modules Cmd_core_bench_opam)
+ (libraries streams-bench core_bench gen iter streaming base)
+ (modes native)
+ (ocamlopt_flags -unbox-closures -O3 -unbox-closures-factor 20))
+
+(executable
+ (name Cmd_baseline)
+ (modules Cmd_baseline X)
+ (libraries core_bench iter streaming streams-bench)
+ (modes native)
+ (ocamlopt_flags -unbox-closures -O3 -unbox-closures-factor 20))
 
 (executable
  (name Cmd_benchmark)
  (modules Cmd_benchmark)
  (libraries streams-bench benchmark)
  (modes native)
- (ocamlopt_flags -unbox-closures -O3))
+ (ocamlopt_flags -unbox-closures -O3 -unbox-closures-factor 20))
 
 (executable
  (name Cmd_core_bench)
  (modules Cmd_core_bench)
  (libraries streams-bench core_bench)
  (modes native)
- (ocamlopt_flags -unbox-closures -O3))
+ (ocamlopt_flags -unbox-closures -O3 -unbox-closures-factor 20))
 
 (executable
  (name Parallel)
  (modules Parallel)
  (libraries streams-bench)
  (modes native)
- (ocamlopt_flags -unbox-closures -O3))
+ (ocamlopt_flags -unbox-closures -O3 -unbox-closures-factor 20))

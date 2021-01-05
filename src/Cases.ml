@@ -70,7 +70,74 @@ module Mk_main(Stream : Types.Stream) = struct
     | unknown -> failwith ("invalid main_ops value: " ^ unknown)
 end
 
+module Main_baseline = struct
+  module S = Iter
+
+  let (--) i j =
+    S.unfoldr (fun x -> if x=j then None else Some (x, x + 1)) i
+
+  let all () =
+    0 -- !Config.length
+    |> S.map (fun x -> x + 1)
+    |> S.filter (fun x -> x mod 3 = 0)
+    |> S.take !Config.limit
+    |> S.flat_map (fun x -> x -- (x + 30))
+    |> S.fold (+) 0
+
+  let all_no_flat_map () =
+    0 -- !Config.length
+    |> S.map (fun x -> x + 1)
+    |> S.filter (fun x -> x mod 3 = 0)
+    |> S.take !Config.limit
+    |> S.fold (+) 0
+
+  let all_no_take () =
+    0 -- !Config.length
+    |> S.map (fun x -> x+1)
+    |> S.filter (fun x -> x mod 2 = 0)
+    |> S.flat_map (fun x -> x -- (x+30))
+    |> S.fold (+) 0
+
+  let fold () =
+    0 -- !Config.length
+    |> S.fold (+) 0
+
+  let map () =
+    0 -- !Config.length
+    |> S.map (fun x -> x + 1)
+    |> S.fold (+) 0
+
+  let filter () =
+    0 -- !Config.length
+    |> S.filter (fun x -> x mod 2 = 0)
+    |> S.fold (+) 0
+
+  let flat_map () =
+    0 -- !Config.length
+    |> S.flat_map (fun x -> S.singleton x)
+    |> S.fold (+) 0
+
+  let take () =
+    0 -- !Config.length
+    |> S.take !Config.limit
+    |> S.fold (+) 0
+
+  let current =
+    match !Config.main_ops with
+    | "all" -> all
+    | "all_no_flat_map" -> all_no_flat_map
+    | "all_no_take" -> all_no_take
+    | "fold" -> fold
+    | "map" -> map
+    | "filter" -> map
+    | "flat_map" -> flat_map
+    | "take" -> take
+    | unknown -> failwith ("invalid main_ops value: " ^ unknown)
+end
+
+
 module Main = struct
+  module Baseline = Main_baseline
   module Pull_cursor = Mk_main(Pull_cursor)
   module Pull_cursor_k = Mk_main(Pull_cursor_k)
   module Pull_cursor_safe = Mk_main(Pull_cursor_safe)
@@ -84,8 +151,9 @@ module Main = struct
 end
 
 
-let main_tests () =
+let main_tests =
   let x = Main.Push_unit.current () in begin
+    assert (x = Main.Baseline.current ());
     assert (x = Main.Pull_cursor.current ());
     assert (x = Main.Pull_cursor_k.current ());
     assert (x = Main.Pull_cursor_safe.current ());
@@ -99,6 +167,7 @@ let main_tests () =
   end
 
 let main = [
+  "Baseline", Main.Baseline.current;
   "Streaming.Source", Main.Pull_cursor.current;
   "Gen", Main.Pull_option.current;
   "Base.Sequence", Main.Pull_stream_fusion.current;
