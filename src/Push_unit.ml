@@ -14,7 +14,7 @@ let take n seq k =
   try
     seq
       (fun x ->
-          if !count = n then raise ExitTake;
+          if !count = n then raise_notrace ExitTake;
           incr count;
           k x)
   with ExitTake -> ()
@@ -43,12 +43,12 @@ let concat self other = fun k ->
   other k
 
 let unfold seed next = fun k ->
-  let rec loop seed =
-    match next seed with
-    | None -> ()
+  let seed = ref seed in
+  let continue = ref true in
+  while !continue do
+    match next !seed with
+    | None -> continue := false
     | Some (x, seed') ->
       k x;
-      loop seed'
-  in
-  loop seed
-
+      seed := seed'
+  done
