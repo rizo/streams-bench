@@ -1,8 +1,8 @@
 let ( = ) : int -> int -> bool = ( = )
 
 module Config = struct
-  let length = 10240
-  let limit = 5120
+  let length = 1024
+  let limit = 512
 end
 
 module Streaming_core = struct
