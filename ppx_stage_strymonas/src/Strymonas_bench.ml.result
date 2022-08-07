@@ -1,0 +1,23 @@
+let _ =
+  let s = ref 0 in
+  (let s''1 = s in
+   let s = ref (if 0 = 1024 then None else Some (0, (0 + 1))) in
+   let nr = ref 512 in
+   while ((!nr) > 0) && ((!s) <> None) do
+     match !s with
+     | Some (el, s') ->
+         (s := (if s' = 1024 then None else Some (s', (s' + 1)));
+          (let t = el + 1 in
+           if (t mod 3) = 0
+           then
+             (decr nr;
+              (let s = ref (if t = (t + 30) then None else Some (t, (t + 1))) in
+               while (!s) <> None do
+                 match !s with
+                 | Some (el, s') ->
+                     (s :=
+                        (if s' = (t + 30) then None else Some (s', (s' + 1)));
+                      s''1 := ((!s''1) + el))
+                 done))))
+     done);
+  !s
