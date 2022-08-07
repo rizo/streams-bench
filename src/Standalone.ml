@@ -1,6 +1,8 @@
+let ( = ) : int -> int -> bool = ( = )
+
 module Config = struct
-  let length = int_of_float (2.0 ** 10.0)
-  let limit = length / 2
+  let length = 1024
+  let limit = 512
 end
 
 module Streaming_stream = struct
@@ -64,13 +66,12 @@ module Streaming_stream = struct
       self.reduce
         (Reducer
            {
-             init = k.init;
+             k with
              step =
                (fun r x ->
                  incr i;
                  k.step r x);
              full = (fun _ -> !i = n);
-             stop = k.stop;
            })
     in
     { reduce }
@@ -116,7 +117,45 @@ module Streaming_stream = struct
     in
     { reduce }
 
-  let unfold = unfold_safe
+  let unfold_unsafe_mut s0 next =
+    let reduce (Reducer k) =
+      let s = ref s0 in
+      let r = ref (k.init ()) in
+      let continue = ref true in
+      while !continue && not (k.full !r) do
+        match next !s with
+        | None -> continue := false
+        | Some (x, s') ->
+          s := s';
+          r := k.step !r x
+      done;
+      k.stop !r
+    in
+    { reduce }
+
+  exception Stop_iteration
+
+  (* Slower 5% than using a ref with continue. *)
+  let unfold_mut2 s0 next =
+    let reduce (Reducer k) =
+      let s = ref s0 in
+      let r = ref (k.init ()) in
+      begin
+        try
+          while not (k.full !r) do
+            match next !s with
+            | None -> raise_notrace Stop_iteration
+            | Some (x, s') ->
+              s := s';
+              r := k.step !r x
+          done
+        with Stop_iteration -> ()
+      end;
+      k.stop !r
+    in
+    { reduce }
+
+  let unfold = unfold_unsafe_mut
   let ( -- ) i j = unfold i (fun x -> if x = j then None else Some (x, x + 1))
 end
 
@@ -175,10 +214,37 @@ let iter_test () =
   |> flat_map (fun x -> x -- (x + 30))
   |> fold ( + ) 0
 
+let strymons_test () =
+  let s = ref 0 in
+  (let s''1 = s in
+   let s = ref (if 0 = 1024 then None else Some (0, 0 + 1)) in
+   let nr = ref 512 in
+   while !nr > 0 && !s <> None do
+     match !s with
+     | None -> assert false
+     | Some (el, s') ->
+       s := if s' = 1024 then None else Some (s', s' + 1);
+       let t = el + 1 in
+       if t mod 3 = 0 then (
+         decr nr;
+         let s = ref (if t = t + 30 then None else Some (t, t + 1)) in
+         while !s <> None do
+           match !s with
+           | None -> assert false
+           | Some (el, s') ->
+             s := if s' = t + 30 then None else Some (s', s' + 1);
+             s''1 := !s''1 + el
+         done)
+   done);
+  !s
+
 let () =
-  assert (iter_test () = streaming_stream_test ());
+  let expected = iter_test () in
+  assert (expected = streaming_stream_test ());
+  assert (expected = strymons_test ());
   let tests =
     [
+      ("Strymonas", Sys.opaque_identity strymons_test, ());
       ("Streaming.Stream", Sys.opaque_identity streaming_stream_test, ());
       ("Iter", Sys.opaque_identity iter_test, ());
     ]

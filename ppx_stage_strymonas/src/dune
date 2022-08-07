@@ -1,0 +1,11 @@
+
+(executable
+ (name strymonas_bench)
+ (public_name strymonas_bench)
+ (modules strymonas strymonas_bench)
+ (flags (:standard -w -8-27))
+ (preprocess
+  (pps ppx_stage.ppx)))
+
+(rule (action (with-stdout-to strymonas_example.out (run ./strymonas_bench.exe))))
+
