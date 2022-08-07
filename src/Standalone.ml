@@ -1,11 +1,70 @@
 let ( = ) : int -> int -> bool = ( = )
 
 module Config = struct
-  let length = 1024
-  let limit = 512
+  let length = 10240
+  let limit = 5120
 end
 
-module Streaming_stream = struct
+module Streaming_core = struct
+  type +'a t = { fold : 'r. 'r -> ('r -> 'a -> 'r) -> bool ref -> 'r }
+  [@@unboxed]
+
+  let[@inline] unfold s0 next =
+    let[@inline] fold init step full =
+      let s = ref (next s0) in
+      let r = ref init in
+      while Option.is_some !s && not !full do
+        let x, s' = Option.get !s in
+        s := next s';
+        r := step !r x
+      done;
+      !r
+    in
+    { fold }
+
+  let[@inline] ( -- ) i j =
+    unfold i (fun [@inline] x -> if x = j then None else Some (x, x + 1))
+
+  let[@inline] flat_map f self =
+    let fold init step full =
+      let step' r x =
+        let inner = f x in
+        inner.fold r step full
+      in
+      self.fold init step' full
+    in
+    { fold }
+
+  let[@inline] map f self =
+    let fold init step full =
+      let step' acc x = step acc (f x) in
+      self.fold init step' full
+    in
+    { fold }
+
+  let[@inline] filter pred self =
+    let fold init step full =
+      let step' r x = if pred x then step r x else r in
+      self.fold init step' full
+    in
+    { fold }
+
+  let[@inline] take n self =
+    let fold init step full =
+      let i = ref 0 in
+      let step' r x =
+        incr i;
+        step r x
+      in
+      let full' = ref (!i = n || !full) in
+      self.fold init step' full'
+    in
+    { fold }
+
+  let[@inline] fold step init self = self.fold init step (ref false)
+end
+
+module Streaming_safe = struct
   let bracket ~(init : unit -> 'r) ~(stop : 'r -> 'b) (f : 'r -> 'r) : 'b =
     let acc = init () in
     try
@@ -26,6 +85,21 @@ module Streaming_stream = struct
 
   type 'a t = { reduce : 'r. ('a, 'r) reducer -> 'r } [@@unboxed]
 
+  let unfold s0 next =
+    let reduce (Reducer k) =
+      let rec loop s r =
+        if k.full r then r
+        else
+          match next s with
+          | None -> r
+          | Some (x, s') -> loop s' (k.step r x)
+      in
+      bracket (loop s0) ~init:k.init ~stop:k.stop
+    in
+    { reduce }
+
+  let ( -- ) i j = unfold i (fun x -> if x = j then None else Some (x, x + 1))
+
   let flat_map f self =
     let reduce (Reducer k) =
       let step r x =
@@ -35,16 +109,6 @@ module Streaming_stream = struct
       self.reduce (Reducer { k with step })
     in
     { reduce }
-
-  let fold step init self =
-    self.reduce
-      (Reducer
-         {
-           init = (fun () -> init);
-           step;
-           full = (fun _ -> false);
-           stop = (fun x -> x);
-         })
 
   let map f self =
     let reduce (Reducer k) =
@@ -60,23 +124,7 @@ module Streaming_stream = struct
     in
     { reduce }
 
-  let take_mut n self =
-    let reduce (Reducer k) =
-      let i = ref 0 in
-      self.reduce
-        (Reducer
-           {
-             k with
-             step =
-               (fun r x ->
-                 incr i;
-                 k.step r x);
-             full = (fun _ -> !i = n);
-           })
-    in
-    { reduce }
-
-  let take_pure n self =
+  let take n self =
     let reduce (Reducer k) =
       self.reduce
         (Reducer
@@ -89,74 +137,15 @@ module Streaming_stream = struct
     in
     { reduce }
 
-  let take = take_mut
-
-  let unfold_unsafe s0 next =
-    let reduce (Reducer k) =
-      let rec loop s r =
-        if k.full r then r
-        else
-          match next s with
-          | None -> r
-          | Some (x, s') -> loop s' (k.step r x)
-      in
-      k.stop (loop s0 (k.init ()))
-    in
-    { reduce }
-
-  let unfold_safe s0 next =
-    let reduce (Reducer k) =
-      let rec loop s r =
-        if k.full r then r
-        else
-          match next s with
-          | None -> r
-          | Some (x, s') -> loop s' (k.step r x)
-      in
-      bracket (loop s0) ~init:k.init ~stop:k.stop
-    in
-    { reduce }
-
-  let unfold_unsafe_mut s0 next =
-    let reduce (Reducer k) =
-      let s = ref s0 in
-      let r = ref (k.init ()) in
-      let continue = ref true in
-      while !continue && not (k.full !r) do
-        match next !s with
-        | None -> continue := false
-        | Some (x, s') ->
-          s := s';
-          r := k.step !r x
-      done;
-      k.stop !r
-    in
-    { reduce }
-
-  exception Stop_iteration
-
-  (* Slower 5% than using a ref with continue. *)
-  let unfold_mut2 s0 next =
-    let reduce (Reducer k) =
-      let s = ref s0 in
-      let r = ref (k.init ()) in
-      begin
-        try
-          while not (k.full !r) do
-            match next !s with
-            | None -> raise_notrace Stop_iteration
-            | Some (x, s') ->
-              s := s';
-              r := k.step !r x
-          done
-        with Stop_iteration -> ()
-      end;
-      k.stop !r
-    in
-    { reduce }
-
-  let unfold = unfold_unsafe_mut
-  let ( -- ) i j = unfold i (fun x -> if x = j then None else Some (x, x + 1))
+  let fold step init self =
+    self.reduce
+      (Reducer
+         {
+           init = (fun () -> init);
+           step;
+           full = (fun _ -> false);
+           stop = (fun x -> x);
+         })
 end
 
 module Iter = struct
@@ -196,8 +185,17 @@ module Iter = struct
   let ( -- ) i j = unfold i (fun x -> if x = j then None else Some (x, x + 1))
 end
 
-let streaming_stream_test () =
-  let open Streaming_stream in
+let streaming_core_test () =
+  let open Streaming_core in
+  0 -- Config.length
+  |> map (fun x -> x + 1)
+  |> filter (fun x -> x mod 3 = 0)
+  |> take Config.limit
+  |> flat_map (fun [@inline] x -> x -- (x + 30))
+  |> fold ( + ) 0
+
+let streaming_safe_test () =
+  let open Streaming_safe in
   0 -- Config.length
   |> map (fun x -> x + 1)
   |> filter (fun x -> x mod 3 = 0)
@@ -217,13 +215,13 @@ let iter_test () =
 let strymons_test () =
   let s = ref 0 in
   (let s''1 = s in
-   let s = ref (if 0 = 1024 then None else Some (0, 0 + 1)) in
-   let nr = ref 512 in
+   let s = ref (if 0 = Config.length then None else Some (0, 0 + 1)) in
+   let nr = ref Config.limit in
    while !nr > 0 && !s <> None do
      match !s with
      | None -> assert false
      | Some (el, s') ->
-       s := if s' = 1024 then None else Some (s', s' + 1);
+       s := if s' = Config.length then None else Some (s', s' + 1);
        let t = el + 1 in
        if t mod 3 = 0 then (
          decr nr;
@@ -240,14 +238,16 @@ let strymons_test () =
 
 let () =
   let expected = iter_test () in
-  assert (expected = streaming_stream_test ());
+  assert (expected = streaming_core_test ());
+  assert (expected = streaming_safe_test ());
   assert (expected = strymons_test ());
   let tests =
     [
+      ("Streaming_core", Sys.opaque_identity streaming_core_test, ());
       ("Strymonas", Sys.opaque_identity strymons_test, ());
-      ("Streaming.Stream", Sys.opaque_identity streaming_stream_test, ());
+      ("Streaming_safe", Sys.opaque_identity streaming_safe_test, ());
       ("Iter", Sys.opaque_identity iter_test, ());
     ]
   in
-  let results = (Sys.opaque_identity Benchmark.throughputN) ~repeat:1 3 tests in
+  let results = (Sys.opaque_identity Benchmark.throughputN) ~repeat:2 3 tests in
   Benchmark.tabulate results
