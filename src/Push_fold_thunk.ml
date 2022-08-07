@@ -1,3 +1,10 @@
+(*
+  Model based on skyb0rg's implementation.
+  See:
+    - https://github.com/Skyb0rg007/sml-libs/blob/master/streaming/push.sml
+    - https://www.reddit.com/r/ocaml/comments/wfhu1r/how_lazy_do_push_streams_need_to_be/
+ *)
+
 let ( = ) : int -> int -> bool = ( = )
 
 type 'a thunk = unit -> 'a
