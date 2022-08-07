@@ -7,8 +7,19 @@
    Push_fold_stop Push_fold_thunk Push_fold_lazy Push_reducer
    Push_reducer_bool Push_reducer_obj Push_reducer_stop Push_unit Types)
  (modes native)
- (libraries unix extunix)
- (ocamlopt_flags -unbox-closures -O3))
+ (libraries unix)
+ ;(ocamlopt_flags -unbox-closures -O3)
+ )
+
+(executable
+ (name Standalone)
+ (modules Standalone)
+ (libraries benchmark)
+ (modes native)
+ ;(ocamlopt_flags -unbox-closures -O3 -unbox-closures-factor 20)
+ (ocamlopt_flags -O3)
+ )
+
 
 (executable
  (name Cmd_benchmark)
@@ -22,11 +33,11 @@
  (modules Cmd_core_bench)
  (libraries streams-bench core_unix.command_unix core_bench)
  (modes native)
- (ocamlopt_flags -unbox-closures -O3))
+ (ocamlopt_flags -unbox-closures -O3 -unbox-closures-factor 20))
 
 (executable
  (name Parallel)
  (modules Parallel)
- (libraries streams-bench)
+ (libraries streams-bench extunix)
  (modes native)
  (ocamlopt_flags -unbox-closures -O3))
