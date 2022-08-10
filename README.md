@@ -9,7 +9,7 @@ The results for the benchmarks presented here were run on a MacBook Pro with the
 
 The benchmarks were built with the flambda variant of the 4.14.0 compiler with the `-O3` flags.
 
-![image](./results/result-1660151746.png)
+![image](./results/result-macbook_m1-1660151746.png)
 
 > Higher values mean faster execution time.
 
