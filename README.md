@@ -76,7 +76,7 @@ type 'a t =
 ### `Gen` (`Pull_option`)
 Model used in [Gen](https://github.com/c-cube/gen). This is a simple pull iterator similar in spirit to `Pull_cursor` but without explicit state. The implementation of combinators is forced to used mutable state for control management.
 
-## Base.Sequence (`Pull_stream_fusion`)
+### Base.Sequence (`Pull_stream_fusion`)
 Model used in
 [Base.Sequence](https://github.com/janestreet/base/blob/v0.14.0/src/sequence.mli).
 This iterator is very well known for being used as a "stream fusion" mechanism
