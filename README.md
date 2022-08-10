@@ -143,7 +143,7 @@ type 'a t = { run : 'r . ('r -> 'a -> 'r option) -> 'r -> 'r }
 ```
 
 
-### Iter (`Push_unit`)
+### `Iter` (`Push_unit`)
 Model used in [Iter](https://github.com/c-cube/iter). This is a very simple
 push-based iterator. It has excellent performance and supports efficient
 concatentation and unzipping. Its minimal interface imposes the use mutations
