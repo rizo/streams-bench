@@ -262,7 +262,7 @@ let () =
     (fun (benchmark_name, cases) ->
       Printf.fprintf out "benchmark,input_size,case,ops_per_sec\n%!";
       for pow = 1 to 6 do
-        Config.length := int_of_float (float 10 ** float pow);
+        Config.length := int_of_float (10.0 ** float pow);
         Config.limit := !Config.length / 2;
         Printf.eprintf "-- Running benchmark %S with input %d\n%!"
           benchmark_name !Config.length;
