@@ -13,7 +13,7 @@ The benchmarks were built with the flambda variant of the 4.14.0 compiler with t
 
 > Higher values mean faster execution time.
 
-Detailed benchmark results for different operations can be found [here](https://docs.google.com/spreadsheets/d/1OdlEwwunb4ibhHgkwR0I4cRIgOIOHqXRZTtxtoTd6JE).
+Detailed benchmark results (including on AMD CPUs) can be found [here](https://docs.google.com/spreadsheets/d/1OdlEwwunb4ibhHgkwR0I4cRIgOIOHqXRZTtxtoTd6JE).
 
 ## Implemented models
 
