@@ -1,43 +1,14 @@
 (library
- (name Streams_bench)
- (public_name streams-bench)
- (modules Cases Concat Config Local Pull_cursor Pull_cursor_k
-   Pull_cursor_safe Pull_cursor_skip Pull_cursor_safe Pull_exn Pull_index
-   Pull_option Pull_stream_fusion Pull_thunk_list Push_bool Push_fold
-   Push_fold_stop Push_fold_thunk Push_fold_lazy Push_reducer
-   Push_reducer_bool Push_reducer_obj Push_reducer_stop Push_unit Types)
+ (name streams_bench)
+ (modules :standard \ Main)
+ (wrapped true)
  (modes native)
- (libraries unix)
- ;(ocamlopt_flags -unbox-closures -O3)
- )
+ (ocamlopt_flags -O3))
 
 (executable
- (name Standalone)
- (modules Standalone)
- (libraries benchmark)
+ (name Main)
+ (public_name streams_bench)
+ (modules Main)
+ (libraries benchmark streams_bench)
  (modes native)
- ;(ocamlopt_flags -unbox-closures -O3 -unbox-closures-factor 20)
- (ocamlopt_flags -O3)
- )
-
-
-(executable
- (name Cmd_benchmark)
- (modules Cmd_benchmark)
- (libraries streams-bench benchmark)
- (modes native)
- (ocamlopt_flags -unbox-closures -O3))
-
-(executable
- (name Cmd_core_bench)
- (modules Cmd_core_bench)
- (libraries streams-bench core_unix.command_unix core_bench)
- (modes native)
- (ocamlopt_flags -unbox-closures -O3 -unbox-closures-factor 20))
-
-(executable
- (name Parallel)
- (modules Parallel)
- (libraries streams-bench extunix)
- (modes native)
- (ocamlopt_flags -unbox-closures -O3))
+ (ocamlopt_flags -O3))

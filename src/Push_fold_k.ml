@@ -1,3 +1,9 @@
+(* FIXME:
+   of_list [1;2;3;4;5]
+   |> flat_map (fun x -> of_list [x;x])
+   |> take 4
+   |> fold (fun acc x -> x :: acc) [] *)
+
 type 'a thunk = unit -> 'a
 
 type 'a t = { run : 'r. (continue:('r -> 'r) -> 'r -> 'a -> 'r) -> 'r -> 'r }
@@ -19,7 +25,7 @@ let map f self =
 
 let take n { run } =
   let run k r0 =
-    let i = ref 0 in
+    let i = ref 1 in
     let k' ~continue r x =
       if !i = n then r
       else (
@@ -59,5 +65,13 @@ let of_list list =
   { run = (fun k r -> loop list k r) }
 
 let flat_map f self : 'b t =
-  let run k r0 = self.run (fun ~continue r x -> continue ((f x).run k r)) r0 in
+  let run k r0 =
+    self.run
+      (fun ~continue r x ->
+        let inner = f x in
+        continue (inner.run k r))
+      r0
+  in
   { run }
+
+let ( -- ) i j = unfold i (fun x -> if x = j then None else Some (x, x + 1))

@@ -7,30 +7,33 @@ An ongoing effort to understand and document the performance characteristics of 
 
 The results for the benchmarks presented here were run on a MacBook Pro with the **2.6 GHz 6-Core Intel Core i7** CPU.
 
-The benchmarks were built with the flambda variant of the 4.10 compiler with th `-unbox-closures -O3` flags.
+The benchmarks were built with the flambda variant of the 4.14.0 compiler with the `-O3` flags.
 
-The table below contains normalized execution times for a benchmark that combines the following operations: `unfold`, `map`, `filter`, `take`, `flat_map` and `fold`. The code can be found in `src/Cases.ml`. Only some of the models are included in the benchmark results below.
+![image](./results/result-1660151746.png)
 
-  
-|Input length|Streaming.Source| Gen    |Base.Sequence|Stdlib.Seq|Streaming.Stream| Iter   |
-|------------|----------------|--------|-------------|----------|----------------|--------|
-| 10         | 72.24%         | 80.41% | 88.12%      | 100.00%  | 56.57%         | 61.61% |
-| 100        | 71.95%         | 80.89% | 89.91%      | 100.00%  | 53.43%         | 63.19% |
-| 1,000      | 71.75%         | 81.13% | 89.60%      | 100.00%  | 52.88%         | 61.02% |
-| 10,000     | 72.81%         | 83.24% | 90.59%      | 100.00%  | 52.96%         | 63.44% |
-| 100,000    | 70.72%         | 80.36% | 87.80%      | 100.00%  | 51.51%         | 60.41% |
-| 1,000,000  | 69.32%         | 80.53% | 88.02%      | 100.00%  | 52.63%         | 62.49% |
+> Higher values mean faster execution time.
 
-![image](./results/all-1591727671.png)
-
-> Lower values mean faster execution time.
-
- Detailed benchmark results for different operations can be found [here](https://docs.google.com/spreadsheets/d/1OdlEwwunb4ibhHgkwR0I4cRIgOIOHqXRZTtxtoTd6JE/edit?usp=sharing).
+Detailed benchmark results for different operations can be found [here](https://docs.google.com/spreadsheets/d/1OdlEwwunb4ibhHgkwR0I4cRIgOIOHqXRZTtxtoTd6JE).
 
 ## Implemented models
 
 All the models presented here were implemented from scratch in this repository
 to provide a clean reproducible environment and consisten compilation flags.
+
+
+Below is the overview of some of the implemented models.
+
+### `Strymonas`
+
+A staged stream implementation for BER MetaOCaml (https://strymonas.github.io).
+This models produces agressively inlined imperative code removing all of the
+intermediate abstractions.
+
+Due to the fact that it is a staged model, it requires either the BER MetaOCaml
+compiler or [`ppx_stage`](https://github.com/stedolan/ppx_stage). The included
+benchmark is implemented with `ppx_stage` in the `ppx_stage_strymonas` directory.
+
+For simpliciy the generated code is included inline in the benchmarks.
 
 ### `Stdlib.Seq` (`Pull_thunk_list`)
 Model used in [Stdlib.Seq](https://github.com/ocaml/ocaml/blob/4.10/stdlib/seq.mli). This is an iterator similar to lists albeit lazy,
@@ -119,6 +122,17 @@ type ('a, 'r) reducer =
 type 'a t = { run : 'r . ('a, 'r) reducer -> 'r}
 ```
 
+### `Push_fold_ref`
+A fold with a boolean reference to denote termination. This is one of the most
+efficient streaming models without resource management.
+
+With the current version of flambda adding `[@inline]` attributes in the user
+code can lead to significant speed ups.
+
+```ocaml
+type +'a t = { fold : 'r. 'r -> ('r -> 'a -> 'r) -> bool ref -> 'r }
+```
+
 ### `Push_fold_stop`
 A fold with termination that can be fused to created nested computations that
 form streams. Similar in spirit to `Push_reducer_bool`, but lacks resource
@@ -142,33 +156,11 @@ type 'a t = ('a -> unit) -> unit
 
 ## Running the benchmarks
 
-The benchmarks are configured with environment variables:
 
 ```
-- STREAMS_BENCHMARK=all|all_no_flat_map|all_no_take|fold|map|filter|flat_map|take
-- STREAMS_LENGTH=int (input length)
-- STREAMS_LIMIT=int (used for take)
+$ dune exec --profile=release src/Main.exe
 ```
 
-Run the benchmark with:
+This will run all of the benchmarks with inputs ranging from 10 to 1000000. The
+results will be stored in the `./results` folder.
 
-```
-$ (export STREAMS_BENCHMARK=all; \
-   export STREAMS_LENGTH=500000; \
-   export STREAMS_LIMIT=250000; \
-   opam exec --switch=4.10.0+flambda -- dune exec -- ./src/Cmd_core_bench.exe -quota 10 -ascii)
-
-benchmark=all length=500000 limit=250000
-Estimated testing time 1m (6 benchmarks x 10s). Change using '-quota'.
-
-  Name               Time/Run    mWd/Run     mjWd/Run     Prom/Run   Percentage
- ------------------ ---------- ---------- ------------ ------------ ------------
-  Streaming.Source    44.61ms    79.00Mw    2_829.65w    2_829.65w       70.47%
-  Gen                 51.50ms    41.67Mw    2_361.78w    2_361.78w       81.36%
-  Base.Sequence       55.85ms   100.17Mw    5_800.13w    5_800.13w       88.23%
-  Stdlib.Seq          63.30ms   130.33Mw   13_329.49w   13_329.49w      100.00%
-  Streaming.Stream    31.88ms    32.00Mw    1_785.02w    1_785.02w       50.36%
-  Iter                45.66ms    30.00Mw      782.29w      782.29w       72.13%
-```
-
-Alternatively use the `./run.sh` script to run benchmarks for different input sizes.

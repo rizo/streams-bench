@@ -3,6 +3,8 @@
   See:
     - https://github.com/Skyb0rg007/sml-libs/blob/master/streaming/push.sml
     - https://www.reddit.com/r/ocaml/comments/wfhu1r/how_lazy_do_push_streams_need_to_be/
+
+  FIXME: results in stack overflow
  *)
 
 let ( = ) : int -> int -> bool = ( = )
@@ -66,3 +68,5 @@ let[@inline] of_list list =
 let[@inline] flat_map f self =
   let run k r = self.run (fun r' x -> (f x).run k r') r in
   { run }
+
+let ( -- ) i j = unfold i (fun x -> if x = j then None else Some (x, x + 1))

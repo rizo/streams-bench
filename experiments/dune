@@ -1,0 +1,6 @@
+(executable
+ (name Parallel)
+ (modules Parallel)
+ (libraries extunix)
+ (modes native)
+ (ocamlopt_flags -unbox-closures -O3))

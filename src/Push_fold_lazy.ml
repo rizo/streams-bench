@@ -1,3 +1,4 @@
+(* FIXME: segfaults on input 10000. *)
 let ( = ) : int -> int -> bool = ( = )
 
 type 'a t = { run : 'r. ('r lazy_t -> 'a -> 'r) -> 'r lazy_t -> 'r } [@@unboxed]
@@ -62,3 +63,5 @@ let[@inline] of_list list =
 let[@inline] flat_map f self =
   let run k r = self.run (fun r' x -> (f x).run k r') r in
   { run }
+
+let ( -- ) i j = unfold i (fun x -> if x = j then None else Some (x, x + 1))
