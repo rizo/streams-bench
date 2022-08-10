@@ -5,7 +5,7 @@ An ongoing effort to understand and document the performance characteristics of 
 
 ## Results
 
-The results for the benchmarks presented here were run on a MacBook Pro with the **2.6 GHz 6-Core Intel Core i7** CPU.
+The results for the benchmarks presented here were run on a MacBook Pro with the **M1** ARM CPU.
 
 The benchmarks were built with the flambda variant of the 4.14.0 compiler with the `-O3` flags.
 
