@@ -22,13 +22,17 @@ type +'a t = {
 let[@inline] unfold s0 next =
   let[@inline] fold ~push ~init ~full ~stop =
     let acc = ref (init ()) in
-    let s = ref (next s0) in
-    while Option.is_some !s && not !full do
-      let x, s' = Option.get !s in
-      s := next s';
-      acc := push !acc x
-    done;
-    stop !acc
+    try
+      let s = ref (next s0) in
+      while Option.is_some !s && not !full do
+        let x, s' = Option.get !s in
+        s := next s';
+        acc := push !acc x
+      done;
+      stop !acc
+    with exn ->
+      let _r = stop !acc in
+      raise exn
   in
   { fold }
 
